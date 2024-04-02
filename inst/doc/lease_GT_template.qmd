@@ -1,0 +1,357 @@
+---
+title: ""
+format: 
+  html: default  
+  docx: default  
+  pdf: default
+output:
+  word_document:
+    word_template: inst/doc/word-template-legal.docx
+    
+params:  # From TRACTS.XLSX
+  LeaseID: 3
+  LeaseNo: 101.02
+editor: visual
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      include=FALSE, 
+                      warning=FALSE, 
+                      message=FALSE) 
+library(tidyverse)
+library(lubridate)
+library(glue)
+library(gt)
+library(readxl)
+library(here)
+
+# library(MASS)
+# detach(package:MASS,unload=TRUE)
+
+```
+
+```{r}
+### Parameterized Reporting Using Quarton - Jadey Ryan
+### https://www.youtube.com/watch?v=MKjz_xkMgxY&t=2093s
+
+# knitr::knit_exit()
+# `r format(as.Date(leases$LeaseDate, format = "%Y-%m-%d"), format = "%B, %d, %Y")
+```
+
+```{r}
+
+### Import Tracts Variable named "LeaseNo" is missing.  Will add LeaseNo with left_join to create object "tracts"  
+
+# tracts0 <- read_excel("F:/D_Documents/GitHub-DasRotRad/parameterized_OGLS/data/tracts.xlsx")
+
+# tracts0 <- read_excel("E:/GTLS/Johnson/tallgrass-params-0/data/tracts.xlsx")
+tracts0 <- read_excel(here::here("data/tracts.xlsx"))
+# View(tracts0)
+```
+
+```{r}
+### Import the Leases 
+
+# leases2merge.xlxs is created in ogls_con.R
+# ogls_con.R imports tables from Access 
+library(tidyverse)
+library(readxl)
+
+# leases0 <- read_excel("F:/D_Documents/GitHub-DasRotRad/parameterized_OGLS/data/leases2merge.xlsx", 
+# leases0 <- read_excel("E:/GTLS/Johnson/tallgrass-params-0/data/leases2merge.xlsx", 
+#     col_types = c("numeric", "numeric", "text", 
+#         "text", "text", "text", "text", "text", 
+#         "text", "text", "date", "numeric", 
+#         "numeric", "numeric", "numeric", 
+#         "numeric", "numeric", "numeric", 
+#         "numeric", "numeric", "numeric"))
+
+
+library(readxl)
+# leases0 <- read_excel("E:/GTLS/Johnson/tallgrass-params-0/data/leases2merge.xlsx")
+leases0 <- read_excel(here::here("data/leases2merge.xlsx")) %>% 
+  filter(LeaseID < 11)
+# View(leases2merge)
+View(leases0)
+
+
+```
+
+```{r}
+### Format LeaseDate as_date and rename leases0 to leases
+
+library(lubridate)
+leases <- leases0 %>% 
+dplyr::select(LeaseNo, LeaseID, LessorsName, Address, City, StateOrProvince, STATE, County, PostalCode, LessorSSN, LeaseDate, LeaseTerm, LeaseOption, Royalty, GrossAc, NetAc, BonusPerAc, SeismicBonusPerAc, BonusPmt,  SeisPmt, Totalbonus) %>% 
+  mutate(LeaseDate = as_date(LeaseDate)) %>% 
+  mutate(LeaseDate = format(LeaseDate, '%B, %d, %Y' )) %>% 
+  mutate(LeaseOption = replace_na(LeaseOption, 0))
+
+###  Format payments as currency
+# library(formattable)
+# leases$BonusPmt <- currency(leases$BonusPmt, digits = 2L)
+# leases$SeisPmt <- currency(leases$SeisPmt, digits = 2L)
+# leases$Totalbonus <- currency(leases$Totalbonus, digits = 2L)
+
+ 
+```
+
+```{r}
+
+### Add LeaseNo to tibble named "tracts" 
+leases_add_leaseNo <- leases0 %>% 
+  select(LeaseID, LeaseNo) 
+
+tracts1 <- left_join(tracts0, leases_add_leaseNo, copy=TRUE, by="LeaseID")
+```
+
+```{r}
+
+### Creating a Table of Tracts.  These tracts are related to leases.
+
+### Modifying Tracts for Params Output
+
+tracts <- tracts1 %>%
+  rename(LeaseNo = LeaseNo.x) %>% 
+ filter(LeaseID==params$LeaseID) %>%
+#  filter(LeaseNo=="101.02") %>% 
+  select(LeaseNo, TractNo, Twp, Rng, Sec, CountyName, Description, TractGrossAc) %>%
+  rename("Township North" = Twp) %>%
+   rename("Range West" = Rng) %>%
+  rename("County, Nebraska" = CountyName) %>%
+  rename("Section" = Sec) %>%
+   rename("Gross Acres" = TractGrossAc) %>%
+  arrange(TractNo)
+```
+
+```{r eval=TRUE }
+### Test MASS package to change decimal fractions to proper fractions
+myFraction <- params$Royalty
+myRoyalty <- as.character(MASS::fractions(as.numeric(myFraction)))
+# myRoyalty
+
+# `r MASS::fractions(as.numeric(params$Royalty))` 
+ 
+```
+
+```{r, echo=FALSE}
+leases <- leases %>% 
+  filter(LeaseID==params$LeaseID)
+```
+
+```{r eval=FALSE}
+
+# * params work on leases tibble
+# * If params from tracts tibble are included, R crashes.
+params$LeaseID
+# params$LessorsName
+# params$LeaseNo
+# params$LeaseTerm
+# params$LeaseOption
+# params$TractNo
+# params$Twp
+# params$Rng
+# params$Sec
+# currency(params$BonusPmt, symbol="$", digits = 2L)
+# currency(params$SeisPmt, symbol="$", digits = 2L)
+# currency(params$Totalbonus, symbol="$", digits = 2L)
+```
+
+```{r}
+# Text Alignment:  https://www.webucator.com/how-to/how-align-text-with-css.cfm   
+# 
+```
+
+```{r eval=FALSE}
+#  `r format(params$LeaseDate, format = "%d %B %Y")`
+```
+
+<center>
+
+Golden Triangle Land Services, Inc.\
+P O Box 279\
+Sidney, Nebraska 69162\
+(713) 806-6011\
+*rccline\@fastmail.fm*
+
+<div style="text-align: left;">
+
+`r format(Sys.time(), '%d %B, %Y')`
+
+`r leases$LessorsName`\
+`r leases$Address`\
+`r leases$City`, `r leases$StateOrProvince`, `r leases$PostalCode`
+
+RE: Proposed Oil and Gas Lease covering `r params$GrossAc` of land in Cheyenne County, Nebraska.\
+REF. *LeaseNo: `r leases$LeaseNo`*
+
+```{r include=TRUE}
+  gt(tracts) %>%
+  tab_header(
+    title = "Captioned Lands") %>% 
+   # subtitle = "Legal Description of Lands Covered by Oil and Gas Lease") %>% 
+  tab_footnote(
+    footnote = "All Ranges are West of the 6th Prime Meridian",
+    locations = cells_body(columns = "Range West"))
+```
+
+Said lands described above containing, in all **`r leases$GrossAc`** **acres of land**, more or less, and situated in Cheyenne County, Nebraska
+
+<br>
+
+Dear `r leases$LessorsName`:
+
+On behalf of Gusher Oil Company, I have been asked to offer you an Oil and Gas Lease covering your interest in the above captioned lands situated in Cheyenne County, Nebraska.
+
+Gusher Oil Company, whose address is 107 Main Street, Englewood, CO 80111, is offering you `r priceR::format_dollars(leases$BonusPerAc, digits=2)` per net mineral acre as lease bonus under the terms of the Oil and Gas Lease enclosed herewith and an additional `r priceR::format_dollars(leases$SeismicBonusPerAc, digits=2)` per net mineral acre for a Seismic Permit for geophysical exploration.
+
+<u>Your interest is calculated as follows</u>:
+
+`r leases$GrossAc` Gross Acres, and `r leases$NetAc` Net Mineral Acres, more or less:
+
+Oil and Gas Lease Bonus: `r priceR::format_dollars(leases$BonusPmt, digits=2)`\
+Seismic Permit: `r priceR::format_dollars(leases$SeismicBonusPerAc, digits=2)`\
+Total Bonus: `r priceR::format_dollars(leases$Totalbonus, digits=2)`
+
+The proposed lease is for a `r as.numeric(params$LeaseTerm)/12` year primary term with an option to extend the lease term an additional `r as.numeric(params$LeaseOption)/12` years, by paying an additional bonus per net mineral acre of the original bonus consideration to exend the primary term of the lease.
+
+Upon receipt of your executed, acknowledged lease and seismic permit, Norstar will tender the bonus consideration to you in the form of a company check.
+
+I have enclosed two copies of the proposed lease and seismic permit, so you may retain a copy for your personal records.
+
+Please sign the oil and gas lease before a notary public and return the signed documents to me at my letterhead address.
+
+If you have any questions, please contact me at the above number or address.
+
+Thank you very much.
+
+Sincerely,
+
+![](images/signatureRCC.PNG){fig-align="left" width="191" height="82"}
+
+Robert C. Cline, CPL
+
+*LeaseNo: `r leases$LeaseNo`*
+
+\newpage
+
+<p style="font-family: times, serif; font-size:8pt; font-style:italic; font-weight: bold">
+
+RETURN TO:\
+Gusher Oil Company\
+107 Main Street\
+Englewood, CO 80112\
+LeaseNo: `r leases$LeaseNo`
+
+</p>
+
+------------------------------------------------------------------------
+
+<br> <br> <br> <br> <br> <br> <br> <br>
+
+<center>
+
+**OIL AND GAS LEASE**
+
+<br>
+
+<div style="text-align: left;">
+
+```{r}
+lease_date <- leases$LeaseDate
+```
+
+THIS OIL AND GAS LEASE, entered into, effective on `r lease_date`, by and between `r leases$LessorsName` whose address is `r leases$Address`, `r leases$City`, `r leases$StateOrProvince`, `r leases$PostalCode`, hereinafter called Lessor, and Gusher Oil Company, 107 Main Street, Englewood, CO 80112-5514, hereinafter called Lessee.
+
+WITNESSETH, That the Lessor, for and in consideration of TEN & NO 100th DOLLARS (\$10.00) cash, in hand paid, the receipt of which is hereby acknowledged, and other good and valuable consideration, has granted demised, leased and let, and by these presents does grant, demise, lease and let exclusively unto the Lessee, the land hereinafter described, with the exclusive right for the purpose of drilling, mining, exploring by geophysical and other methods, and operating for and producing the oil and gas therefrom, of whatsoever nature or kind, with rights of way and easements for laying pipe lines, and erection of structures thereon to produce, save and take care of said products, all that certain area of land situated in the County of Hickock, State of Wyoming, described as follows, to-wit:
+
+<div style="text-align: left;">
+
+```{r include=TRUE}
+# tracts %>%
+#   filter(LeaseID==leases$LeaseID) %>%
+#   select(LeaseNo, TractNo, Twp, Rng, Sec, CountyName, Description, TractGrossAc) %>%
+#   rename("Township North" = Twp) %>%
+#    rename("Range West" = Rng) %>%
+#   rename("County, Nebraska" = CountyName) %>%
+#   rename("Section" = Sec) %>%
+#    rename("Gross Acres" = TractGrossAc) %>%
+#   arrange(TractNo) %>% 
+  gt(tracts) %>%
+  tab_header(
+    title = "Legal Description") %>% 
+   # subtitle = "Legal Description of Lands Covered by Oil and Gas Lease") %>% 
+  tab_footnote(
+    footnote = "All Ranges are West of the 6th Prime Meridian",
+    locations = cells_body(columns = "Range West"))
+```
+
+<br>\
+<br>
+
+Said lands described above containing, in all `r round(as.numeric(leases$GrossAc), digits=2)` acres of land, more or less, and situated in Cheyenne County, Nebraska.
+
+1.  It is agreed that this lease shall remain in force for a term of **`r as.numeric(leases$LeaseTerm)/12` years** from the effective date first above written, and as long thereafter as oil or gas of whatsoever nature or kind is produced from said leased premises or on acreage pooled therewith, or drilling operations are continued, as hereinafter described. If, at the expiration of the primary term of this lease, oil or gas is not produced on the leased premises or on acreage pooled therewith, but Lessee is then engaged in drilling or re-working operations thereon, then this lease shall continue in force so long as operations are being continuously prosecuted on the leased premises or on acreage pooled therewith; and operations shall be considered to be continuously prosecuted if not more than ninety (90) days shall elapse between the completion or abandonment of one well and the beginning of operations for the drilling of a subsequent well. If after discovery of oil or gas on said land or on acreage pooled therewith, the production thereof should cease from any cause after the primary term, this lease shall not terminate if Lessee commences additional drilling or reworking operations within ninety (90) days from date of cessation of production or from date of completion of dry hole. If oil or gas shall be discovered and produced as a result of such opera¬tions at or after the expiration of the primary term of this lease, this lease shall continue in force so long as oil or gas is produced from the leased premises or on acreage pooled therewith.
+
+2.  This is a PAID-UP LEASE. In consideration of the cash payment from Lessee to Lessor for this lease, Lessor agrees that Lessee shall not be obligated, except as otherwise provided herein, to commence or continue any operations during the primary term. Lessee may at any time or times during or after the primary term surrender this lease as to all or any portion of said land and as to any strata or stratum by delivering to Lessor or by filing for record a release or releases, and be relieved of all obligation thereafter accruing as to the acreage surrendered.
+
+3.  In consideration of the premises the said Lessee covenants and agrees: 1st. To deliver to the credit of Lessor, free of cost, in the pipeline to which Lessee may connect wells on said land, a (`r myRoyalty`) part of all oil produced and saved from the leased premises. 2nd. To pay Lessor,a (`r myRoyalty`) part of the gross proceeds each year, payable quarterly for the gas from each well where gas only is found, while the same is being used off the premises, and if used in the manufacture of gasoline, a royalty of (`r myRoyalty`), payable monthly at the prevailing market rate for gas. 3rd. To pay Lessor for gas produced from any oil wel1 and used off the premises or in the manufacture of gasoline or any other product a royalty of (`r myRoyalty`) of the proceeds, at the mouth of the well payable monthly at the prevailing market rate.
+
+4.  Where gas from a well capable of producing gas is not sold or used, Lessee may pay or tender as royalty to the royalty owners One Dollar (\$1.00) per year per net acre retained hereunder, such payment or tender to be made on or before the anniversary date of this lease next ensuing after the expiration of 90 days from the date such well is shut in and thereafter on or before the anniversary date of this lease during the period such well is shut in. If such payment or tender is made, it will be considered that gas is being produced within the meaning of this lease.
+
+5.  If Lessor owns a less interest in the above described land than the entire and undivided fee simple estate therein, then the royalties (including any shut-in gas royalty) herein provided for shall be paid the Lessor only in the proportion which Lessor's interest bears to the whole and undivided fee.
+
+6.  Lessee shall have the right to use, free of cost, gas, oil and water produced on said land for Lessee's operation thereon, except water from the wells of Lessor.\
+
+7.  When requested by Lessor, Lessee shall bury Lessee's pipe line below plow depth.\
+
+8.  No well shall be drilled nearer than 200 feet to the house or barn, if any, on said premises without written consent of Lessor.\
+
+9.  Lessee shall pay for damages caused by Lessee's operations to growing crops on said land and restore the leased premises as nearly as practical to its original condition.
+
+10. Lessee shall have the right at any time to remove all machinery and fixtures placed on said premises, including the right to draw and remove casing.
+
+11. If the leased premises shall now or hereafter be owned severally or in separate tracts, the premises nevertheless shall be developed and operated as one lease and all royalties accruing hereunder shall be treated as an entirety and shall be divided among and paid to such separate owners in the proportion that the acreage owned by each such separate owner bears to the entire leased acreage.
+
+12. The rights of Lessor and Lessee hereunder may be assigned in whole or part. No change in ownership of Lessor's interest (by assignment or otherwise) shall be binding on Lessee until Lessee has been furnished with notice, consisting of certified copies of all recorded instruments or documents and other information necessary to establish a complete chain of record title from Lessor, and then only with respect to payments thereafter made. No other kind of notice, whether actual or constructive shall be binding on Lessee. No present or future division of Lessor's ownership as to different portions or parcels of said land shall operate to enlarge the obligations or diminish the rights of Lessee, and all Lessee's operations may be conducted without regard to any such division. If all or any part of this lease is assigned, no leasehold owner shall be liable for any act or omission of any other leasehold owner.
+
+13. Lessee, at its option, is hereby given the right and power at any time, either before or after production, to pool or combine into one or more pooled units the land covered by this lease, or any portion thereof, with other land covered by another lease, or leases when, in Lessee's judgment, it is necessary or advisable to do so in order to properly develop and operate said lease premises so as to promote the conservation of such minerals in and under said land, such pooling to be in a unit or units not exceeding 80 acres each in the event of an oil well, or into a unit or units not exceeding 640 acres each in the event of a gas and/or condensate or distillate well, plus a tolerance of ten percent (10%) to conform to Governmental Survey quarter sections. Lessee shall use its best efforts to form the pooled unit in such a manner that the acreage pooled therein shall be in an equal or greater proportion to Lessor's lands. Lessee shall execute in writing and file for record in the county in which the land is situated an instrument identifying and describing the pooled acreage. The entire acreage so pooled into a unit or units shall be treated for all purposes, except the payments of royalties on production from the pooled unit, as if it were included in this lease. If production is found on any part of the pooled acreage it shall be treated as if production is had from this lease whether any well is located on the land covered by this lease or not. In lieu of the royalties herein specified, Lessor shall receive on production from a unit so pooled, only such portion of the royalty stipulated herein as the amount of acreage placed in the unit or the royalty interest therein bears to the total acreage so pooled in the particular unit involved. In the absence of production, Lessee may terminate any pooled area by filing of record a notice of termination.
+
+14. All express or implied covenants of this lease shall be subject to all Federal and State Laws, Executive Orders, Rules or Regulations, and this lease shall not be terminated, in whole or in part, nor Lessee held liable in damages, for failure to comply therewith, if compliance is prevented by, or if such failure is the result of, any such Law, Order, Rule or Regulation.
+
+15. Lessor agrees that the Lessee shall have the right at any time to redeem for Lessor, by payment, any mortgages, taxes or other liens on the above described lands, in the event of default of payment by Lessor and be subrogated to the rights of the holder thereof, and the undersigned Lessors, for themselves and their heirs, successors and assigns, hereby surrender and release all right of dower and homestead in the premises described herein, insofar as said right of dower and homestead may in any way affect the purposes for which this lease is made, as recited herein.
+
+16. Prior to the expiration of the primary term, Lessee reserves a "right of first refusal" to extend the term, as to all or a portion of the lease premises, for a period of **`r as.numeric(leases$LeaseOption)/12` years** from the expiration date herein, for a equal to the original bonus paid for the lease.
+
+17. All of the provisions of this lease shall be binding on the heirs, successors and assigns of Lessor and Lessee.
+
+This instrument may be executed in multiple counterpart originals.
+
+IN WITNESS WHEREOF, this instrument is executed as of the date acknowledged below, but is effective for all purposes on the "Effective Date" first above written.
+
+. \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\
+. `r leases$LessorsName`
+
+<br> <br>
+
+<center>
+
+**ACKNOWLEDGEMENTS**
+
+<center>
+
+<div style="text-align: left;">
+
+<br>
+
+STATE OF `r stringr::str_to_upper(leases$STATE)`      §\
+COUNTY OF `r stringr::str_to_upper(leases$County)`  §
+
+The foregoing instrument was acknowledged before me this \_\_\_\_\_\_ day of \_\_\_\_\_\_\_\_\_\_\_\_\_, 2024, by `r leases$LessorsName`.
+
+IN WITNESS WHEREOF, I have set my hand and official seal the day and year last above written.
+
+. \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\
+. NotaryPublic
