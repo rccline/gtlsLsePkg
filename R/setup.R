@@ -1,15 +1,16 @@
-library(usethis)
+# library(usethis)
 
 # Initialize Git version control
-usethis::use_git()
+# usethis::use_git()
 
 
 
 # Connect to a GitHub repository
 # use_github(url = "https://github.com/rccline/gtlsLsePkg.git")
-use_github(repo = "gtlsLsePkg")
+# use_github(repo = "gtlsLsePkg")
 
-use_mit_license("Golden Triangle Land Services, Inc.")
+# Run from Terminal
+# use_mit_license("Golden Triangle Land Services, Inc.")
 
 # library(devtools)
 # library(usethis)

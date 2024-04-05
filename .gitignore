@@ -4,3 +4,6 @@
 .httr-oauth
 .DS_Store
 .quarto
+setup.R
+R/import_tables.R
+

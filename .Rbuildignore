@@ -1,3 +1,5 @@
 ^gtlsLsePkg\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+^R/setup\.R$
+^R/import_tables\.R

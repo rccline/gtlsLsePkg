@@ -1,18 +1,15 @@
 ---
 title: ""
-format: 
-  html: default  
-  docx: default  
-  pdf: default
-output:
-  word_document:
-    word_template: inst/doc/word-template-legal.docx
-    
-params:  # From TRACTS.XLSX
+format:
+  docx:
+    pandoc:
+      template: "E:/gtlsLsePkg/inst/extdata/word-template-legal.docx"
+params:  
   LeaseID: 3
   LeaseNo: 101.02
 editor: visual
 ---
+
 
 ```{r setup, include=FALSE}
 
@@ -20,63 +17,38 @@ knitr::opts_chunk$set(echo = FALSE,
                       include=FALSE, 
                       warning=FALSE, 
                       message=FALSE) 
-library(tidyverse)
 library(lubridate)
 library(glue)
 library(gt)
 library(readxl)
-library(here)
-
-# library(MASS)
-# detach(package:MASS,unload=TRUE)
+library(knitr)
+library(rmarkdown)
+library(stringr)
+library(priceR)
+library(MASS)
+library(magrittr)
+library(dplyr)
+library(tidyr)
 
 ```
 
-```{r}
-### Parameterized Reporting Using Quarton - Jadey Ryan
-### https://www.youtube.com/watch?v=MKjz_xkMgxY&t=2093s
 
-# knitr::knit_exit()
-# `r format(as.Date(leases$LeaseDate, format = "%Y-%m-%d"), format = "%B, %d, %Y")
-```
 
-```{r}
+```{r importtracts}
 
 ### Import Tracts Variable named "LeaseNo" is missing.  Will add LeaseNo with left_join to create object "tracts"  
 
-# tracts0 <- read_excel("F:/D_Documents/GitHub-DasRotRad/parameterized_OGLS/data/tracts.xlsx")
+tracts00 <- system.file("data", "tracts.xlsx", package = "gtlsLsePkg")
+tracts0 <- read_excel(tracts00)
 
-# tracts0 <- read_excel("E:/GTLS/Johnson/tallgrass-params-0/data/tracts.xlsx")
-tracts0 <- read_excel(here::here("data/tracts.xlsx"))
-# View(tracts0)
 ```
 
-```{r}
+```{r importleases}
 ### Import the Leases 
 
-# leases2merge.xlxs is created in ogls_con.R
-# ogls_con.R imports tables from Access 
-library(tidyverse)
-library(readxl)
-
-# leases0 <- read_excel("F:/D_Documents/GitHub-DasRotRad/parameterized_OGLS/data/leases2merge.xlsx", 
-# leases0 <- read_excel("E:/GTLS/Johnson/tallgrass-params-0/data/leases2merge.xlsx", 
-#     col_types = c("numeric", "numeric", "text", 
-#         "text", "text", "text", "text", "text", 
-#         "text", "text", "date", "numeric", 
-#         "numeric", "numeric", "numeric", 
-#         "numeric", "numeric", "numeric", 
-#         "numeric", "numeric", "numeric"))
-
-
-library(readxl)
-# leases0 <- read_excel("E:/GTLS/Johnson/tallgrass-params-0/data/leases2merge.xlsx")
-leases0 <- read_excel(here::here("data/leases2merge.xlsx")) %>% 
+leases00 <- system.file("data", "leases2merge.xlsx", package = "gtlsLsePkg")
+leases0 <- read_excel(leases00) %>% 
   filter(LeaseID < 11)
-# View(leases2merge)
-View(leases0)
-
-
 ```
 
 ```{r}
@@ -89,16 +61,9 @@ dplyr::select(LeaseNo, LeaseID, LessorsName, Address, City, StateOrProvince, STA
   mutate(LeaseDate = format(LeaseDate, '%B, %d, %Y' )) %>% 
   mutate(LeaseOption = replace_na(LeaseOption, 0))
 
-###  Format payments as currency
-# library(formattable)
-# leases$BonusPmt <- currency(leases$BonusPmt, digits = 2L)
-# leases$SeisPmt <- currency(leases$SeisPmt, digits = 2L)
-# leases$Totalbonus <- currency(leases$Totalbonus, digits = 2L)
-
- 
 ```
 
-```{r}
+```{r addLeaseNo}
 
 ### Add LeaseNo to tibble named "tracts" 
 leases_add_leaseNo <- leases0 %>% 
@@ -107,10 +72,9 @@ leases_add_leaseNo <- leases0 %>%
 tracts1 <- left_join(tracts0, leases_add_leaseNo, copy=TRUE, by="LeaseID")
 ```
 
-```{r}
+```{r createTractsTable}
 
 ### Creating a Table of Tracts.  These tracts are related to leases.
-
 ### Modifying Tracts for Params Output
 
 tracts <- tracts1 %>%
@@ -132,40 +96,11 @@ myFraction <- params$Royalty
 myRoyalty <- as.character(MASS::fractions(as.numeric(myFraction)))
 # myRoyalty
 
-# `r MASS::fractions(as.numeric(params$Royalty))` 
- 
 ```
 
-```{r, echo=FALSE}
+```{r, leaseIDParams, echo=FALSE}
 leases <- leases %>% 
   filter(LeaseID==params$LeaseID)
-```
-
-```{r eval=FALSE}
-
-# * params work on leases tibble
-# * If params from tracts tibble are included, R crashes.
-params$LeaseID
-# params$LessorsName
-# params$LeaseNo
-# params$LeaseTerm
-# params$LeaseOption
-# params$TractNo
-# params$Twp
-# params$Rng
-# params$Sec
-# currency(params$BonusPmt, symbol="$", digits = 2L)
-# currency(params$SeisPmt, symbol="$", digits = 2L)
-# currency(params$Totalbonus, symbol="$", digits = 2L)
-```
-
-```{r}
-# Text Alignment:  https://www.webucator.com/how-to/how-align-text-with-css.cfm   
-# 
-```
-
-```{r eval=FALSE}
-#  `r format(params$LeaseDate, format = "%d %B %Y")`
 ```
 
 <center>
@@ -229,7 +164,10 @@ Thank you very much.
 
 Sincerely,
 
-![](images/signatureRCC.PNG){fig-align="left" width="191" height="82"}
+```{r echo=FALSE, results='asis'}
+image_path <- system.file("images", "signatureRCC.PNG", package = "gtlsLsePkg")
+cat("![](", image_path, "){width=191 height=82}", sep="")
+```
 
 Robert C. Cline, CPL
 
@@ -259,7 +197,7 @@ LeaseNo: `r leases$LeaseNo`
 
 <div style="text-align: left;">
 
-```{r}
+```{r lease_date}
 lease_date <- leases$LeaseDate
 ```
 
