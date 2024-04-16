@@ -15,16 +15,15 @@ Install the package directly from GitHub:
 ## Getting Started
 To use *gtlsLsePkg*, follow these steps:
 
-1. Create a Project in RStudio (optional but recommended for managing related files).  
-2. Load the Package:  
-* `library(gtlssLsePkg)`  
-3. Create a RMarkdown Document, or Script in your RSTudio project:  
+1. Create a Project in RStudio (optional, but recommended for managing related files).  
+
+2. Create a RMarkdown Document, or Script in your RSTudio project:  
 * Load the package:  
   - `library(gtlsLsePkg)`  
 * Run the main function to generate lease packages:    
   - `iterate_Lease_Template_GT()`   
   
-An ouput folder will be created in your project and Lease packages for each owner will be created in the output folder. 
+When you execute the iterate code, an ouput folder will be created in your project and Lease packages for each owner will be created in the output folder. 
 
 
 ### Support  
