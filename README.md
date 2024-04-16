@@ -10,7 +10,7 @@ The **gtlsLsePkg** R package automates the creation of lease packages by iterati
 
 Install the package directly from GitHub:
 
-*devtools::install_github("username/gtlsLsePkg")  # Replace "username" with your GitHub username*  
+*devtools::install_github("rccline/gtlsLsePkg")*   
 
 ## Getting Started
 To use *gtlsLsePkg*, follow these steps:
