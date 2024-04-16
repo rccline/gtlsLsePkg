@@ -1,8 +1,8 @@
-## gtlsLsePkg R Package
+## gtlsLsePkg R Package *ver. 0.1.0*
 
 ### Created by Robert C. Cline, 2024
 
-This lease package is in development.  This first version contains a data set to demonstrate how lease packages can be created using R's parameterizing functions.  Future versions will  contain a method to import your own data set with your own lease data.  The data included in this package are annonymized data for the purposes of an example only.  
+This lease package is version 0.1.0 and is in the early stage of development.  This first version contains a data set to demonstrate how lease packages can be created using R's parameterizing functions.  Future versions will  contain a method to import your own data set with your own lease data and modify the lease template so you can the lessee's name and modify the lease provisions.  The data included in this package are annonymized data for the purposes of an example only.  
 
 The **gtlsLsePkg** R package automates the creation of lease packages by iterating through ownership data from one spreadsheet and tract descriptions from another related spreadsheet/table.
 
